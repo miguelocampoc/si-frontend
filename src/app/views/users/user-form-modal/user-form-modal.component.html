@@ -1,0 +1,109 @@
+<c-modal
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  backdrop="static"
+  alignment="center"
+  id="user-form-modal"
+>
+  <c-modal-header>
+    <h5 cModalTitle data-test="modal-title">{{ title() }}</h5>
+    <button cButtonClose type="button" aria-label="Close" (click)="close()"></button>
+  </c-modal-header>
+
+  <c-modal-body>
+    @for (message of errors(); track message) {
+      <c-alert color="danger" data-test="general-error">{{ message }}</c-alert>
+    }
+    @if (isEdit()) {
+      <c-alert color="info" data-test="edit-hint">
+        The API requires the password and its confirmation on every update. Re-enter the current or a new password.
+      </c-alert>
+    }
+
+    <form cForm id="user-form" [formGroup]="form" (ngSubmit)="submit()" novalidate class="d-flex flex-column gap-3">
+      <div>
+        <label for="user-name" class="form-label">Name</label>
+        <c-input-group>
+          <span cInputGroupText><svg cIcon name="cilUser" size="sm"></svg></span>
+          <input
+            id="user-name"
+            cFormControl
+            formControlName="name"
+            type="text"
+            autocomplete="off"
+            [class.is-invalid]="!!error(form.controls.name)"
+          />
+        </c-input-group>
+        @if (error(form.controls.name); as msg) {
+          <div class="invalid-feedback d-block" data-test="name-error">{{ msg }}</div>
+        }
+      </div>
+
+      <div>
+        <label for="user-email" class="form-label">Email</label>
+        <c-input-group>
+          <span cInputGroupText><svg cIcon name="cilEnvelopeClosed" size="sm"></svg></span>
+          <input
+            id="user-email"
+            cFormControl
+            formControlName="email"
+            type="email"
+            autocomplete="off"
+            [class.is-invalid]="!!error(form.controls.email)"
+          />
+        </c-input-group>
+        @if (error(form.controls.email); as msg) {
+          <div class="invalid-feedback d-block" data-test="email-error">{{ msg }}</div>
+        }
+      </div>
+
+      <div>
+        <label for="user-password" class="form-label">Password</label>
+        <c-input-group>
+          <span cInputGroupText><svg cIcon name="cilLockLocked" size="sm"></svg></span>
+          <input
+            id="user-password"
+            cFormControl
+            formControlName="password"
+            type="password"
+            autocomplete="new-password"
+            [class.is-invalid]="!!error(form.controls.password)"
+          />
+        </c-input-group>
+        @if (error(form.controls.password); as msg) {
+          <div class="invalid-feedback d-block" data-test="password-error">{{ msg }}</div>
+        }
+      </div>
+
+      <div>
+        <label for="user-password-confirmation" class="form-label">Confirm password</label>
+        <c-input-group>
+          <span cInputGroupText><svg cIcon name="cilLockLocked" size="sm"></svg></span>
+          <input
+            id="user-password-confirmation"
+            cFormControl
+            formControlName="password_confirmation"
+            type="password"
+            autocomplete="new-password"
+            [class.is-invalid]="!!error(form.controls.password_confirmation)"
+          />
+        </c-input-group>
+        @if (error(form.controls.password_confirmation); as msg) {
+          <div class="invalid-feedback d-block" data-test="confirmation-error">{{ msg }}</div>
+        }
+      </div>
+    </form>
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" [disabled]="saving()" (click)="close()" data-test="cancel">
+      Cancel
+    </button>
+    <button cButton color="primary" type="submit" form="user-form" [disabled]="saving()" data-test="save">
+      @if (saving()) {
+        <c-spinner size="sm" aria-hidden="true" class="me-2" />
+      }
+      {{ isEdit() ? 'Save changes' : 'Create user' }}
+    </button>
+  </c-modal-footer>
+</c-modal>

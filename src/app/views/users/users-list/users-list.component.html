@@ -1,0 +1,108 @@
+<c-container fluid>
+  <c-row>
+    <c-col xs="12">
+      <c-card class="mb-4">
+        <c-card-header class="d-flex justify-content-between align-items-center">
+          <strong>Users</strong>
+          <button cButton color="primary" size="sm" type="button" (click)="openCreate()" data-test="new-user">
+            <svg cIcon name="cilUserFollow" class="me-1"></svg>
+            New user
+          </button>
+        </c-card-header>
+
+        <c-card-body>
+          @if (success(); as message) {
+            <c-alert color="success" [dismissible]="true" (visibleChange)="!$event && success.set(null)" data-test="success">
+              {{ message }}
+            </c-alert>
+          }
+          @if (error(); as message) {
+            <c-alert color="danger" data-test="load-error">
+              {{ message }}
+              <button cButton color="link" class="p-0 ms-2 align-baseline" type="button" (click)="load()" data-test="retry">
+                Retry
+              </button>
+            </c-alert>
+          }
+
+          @if (loading()) {
+            <div class="text-center py-4" data-test="loading">
+              <c-spinner color="primary" />
+            </div>
+          } @else if (!error()) {
+            @if (users().length === 0) {
+              <c-alert color="info" class="mb-0" data-test="empty">No users found.</c-alert>
+            } @else {
+              <table cTable [hover]="true" [striped]="true" [responsive]="true" class="align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col" class="text-end">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (user of users(); track user.id) {
+                    <tr data-test="user-row">
+                      <th scope="row">{{ user.id }}</th>
+                      <td>{{ user.name }}</td>
+                      <td>{{ user.email }}</td>
+                      <td class="text-end">
+                        <button cButton color="info" variant="ghost" size="sm" type="button" class="me-1"
+                          [attr.aria-label]="'Edit ' + user.name" (click)="openEdit(user)" data-test="edit">
+                          <svg cIcon name="cilPencil"></svg>
+                        </button>
+                        <button cButton color="danger" variant="ghost" size="sm" type="button"
+                          [attr.aria-label]="'Delete ' + user.name" (click)="openDelete(user)" data-test="delete">
+                          <svg cIcon name="cilTrash"></svg>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+
+              @if (meta(); as m) {
+                @if (m.last_page > 1) {
+                  <div class="d-flex justify-content-between align-items-center mt-3">
+                    <small class="text-body-secondary">{{ m.total }} users</small>
+                    <c-pagination aria-label="Users pagination" class="mb-0">
+                      <li cPageItem [disabled]="page() === 1">
+                        <a cPageLink role="button" (click)="goTo(page() - 1)">Previous</a>
+                      </li>
+                      @for (p of pages(); track p) {
+                        <li cPageItem [active]="p === page()">
+                          <a cPageLink role="button" (click)="goTo(p)">{{ p }}</a>
+                        </li>
+                      }
+                      <li cPageItem [disabled]="page() === m.last_page">
+                        <a cPageLink role="button" (click)="goTo(page() + 1)">Next</a>
+                      </li>
+                    </c-pagination>
+                  </div>
+                }
+              }
+            }
+          }
+        </c-card-body>
+      </c-card>
+    </c-col>
+  </c-row>
+</c-container>
+
+<app-user-form-modal
+  [visible]="formVisible()"
+  [user]="selectedUser()"
+  (visibleChange)="onFormVisibleChange($event)"
+  (saved)="onSaved($event)"
+/>
+
+<app-user-delete-modal
+  [visible]="deleteVisible()"
+  [user]="userToDelete()"
+  [loading]="deleting()"
+  [error]="deleteError()"
+  (visibleChange)="onDeleteVisibleChange($event)"
+  (confirmed)="confirmDelete($event)"
+/>

@@ -1,0 +1,34 @@
+<c-modal
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  backdrop="static"
+  alignment="center"
+  size="sm"
+  id="user-delete-modal"
+>
+  <c-modal-header>
+    <h5 cModalTitle>Delete user</h5>
+    <button cButtonClose type="button" aria-label="Close" (click)="close()"></button>
+  </c-modal-header>
+
+  <c-modal-body>
+    @if (error(); as message) {
+      <c-alert color="danger" data-test="delete-error">{{ message }}</c-alert>
+    }
+    <p class="mb-0" data-test="delete-message">
+      Are you sure you want to delete <strong>{{ user()?.name }}</strong>? This action cannot be undone.
+    </p>
+  </c-modal-body>
+
+  <c-modal-footer>
+    <button cButton color="secondary" variant="outline" type="button" [disabled]="loading()" (click)="close()" data-test="cancel">
+      Cancel
+    </button>
+    <button cButton color="danger" type="button" [disabled]="loading()" (click)="confirm()" data-test="confirm">
+      @if (loading()) {
+        <c-spinner size="sm" aria-hidden="true" class="me-2" />
+      }
+      Delete
+    </button>
+  </c-modal-footer>
+</c-modal>

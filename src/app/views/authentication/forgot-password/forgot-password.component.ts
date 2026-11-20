@@ -1,0 +1,83 @@
+import { Component, inject, signal } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import {
+  AlertComponent,
+  ButtonDirective,
+  CardBodyComponent,
+  CardComponent,
+  ColComponent,
+  ContainerComponent,
+  FormControlDirective,
+  FormDirective,
+  InputGroupComponent,
+  InputGroupTextDirective,
+  RowComponent,
+  SpinnerComponent
+} from '@coreui/angular';
+import { IconDirective } from '@coreui/icons-angular';
+import { AuthService } from '../../../core/services/auth.service';
+import { applyLaravelErrors, getControlError } from '../../../shared/utils/laravel-errors';
+
+@Component({
+  selector: 'app-forgot-password',
+  templateUrl: './forgot-password.component.html',
+  host: {
+    class: 'bg-body-tertiary min-vh-100 d-flex flex-row align-items-center'
+  },
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    AlertComponent,
+    ButtonDirective,
+    CardBodyComponent,
+    CardComponent,
+    ColComponent,
+    ContainerComponent,
+    FormControlDirective,
+    FormDirective,
+    IconDirective,
+    InputGroupComponent,
+    InputGroupTextDirective,
+    RowComponent,
+    SpinnerComponent
+  ]
+})
+export class ForgotPasswordComponent {
+  readonly #auth = inject(AuthService);
+
+  readonly loading = signal(false);
+  readonly errors = signal<string[]>([]);
+  readonly success = signal<string | null>(null);
+
+  readonly form = new FormGroup({
+    email: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email]
+    })
+  });
+
+  readonly error = getControlError;
+
+  submit(): void {
+    if (this.loading()) return;
+    this.errors.set([]);
+    this.success.set(null);
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading.set(true);
+    this.#auth.forgotPassword(this.form.getRawValue()).subscribe({
+      next: res => {
+        this.loading.set(false);
+        this.success.set(res?.message ?? res?.status ?? 'We have emailed your password reset link.');
+      },
+      error: err => {
+        this.loading.set(false);
+        this.errors.set(applyLaravelErrors(this.form, err));
+      }
+    });
+  }
+}
