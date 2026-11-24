@@ -2,9 +2,9 @@ name: Continuous Integration (CI)
 
 on:
   push:
-    branches: [main, master, develop]
+    branches: [main, master, development]
   pull_request:
-    branches: [main, master]
+    branches: [main, master,development]
 
 jobs:
   unit-and-integration:
